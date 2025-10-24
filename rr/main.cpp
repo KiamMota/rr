@@ -136,8 +136,8 @@ void pipe_for_file(const std::string& file_name,
     }
 
     if (fs::file_size(file_name) <= MB10) {
-        std::string mem_text((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
         size_t pos = 0;
+        std::string mem_text((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
         while ((pos = mem_text.find(old_word, pos)) != std::string::npos) {
             mem_text.replace(pos, old_word.size(), new_word);
             if (verbosity) 
@@ -224,7 +224,11 @@ int main(int argn, char** argv)
   argv++;
   /* to sync with the argv */
   argn--;
-
+  if(argn == 0)
+  {
+    help();
+    std::exit(0);
+  }
   if(argn <= 2 && (std::strcmp(argv[0], "-v") == 0 || std::strcmp(argv[0], "--version") == 0))
   {
     version();
