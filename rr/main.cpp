@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <filesystem>
 #include <ostream>
@@ -109,11 +110,11 @@ bool find_verbosity_flag(const int& argn, char**& argv)
 
 file_type get_file_type(const std::string& file) {
     std::error_code ec;
-    std::filesystem::file_status status = std::filesystem::symlink_status(file, ec);
+    fs::file_status status = fs::symlink_status(file, ec);
     if (ec) return file_type::Unknown;
-    if (std::filesystem::is_regular_file(status)) return file_type::Regular;
-    if (std::filesystem::is_directory(status)) return file_type::Directory;
-    if (std::filesystem::is_symlink(status)) return file_type::Symlink;
+    if (fs::is_regular_file(status)) return file_type::Regular;
+    if (fs::is_directory(status)) return file_type::Directory;
+    if (fs::is_symlink(status)) return file_type::Symlink;
     return file_type::Unknown;
 }
 
@@ -122,19 +123,19 @@ void pipe_for_file(const std::string& file_name,
                    const std::string& new_word, 
                    bool verbosity) 
 {
-    std::istd::filesystemtream infile(file_name);
+    std::ifstream infile(file_name);
     if (!infile) {
         std::cerr << "Couldn't open file '" << file_name << "'." << std::endl;
         return;
     }
 
-    std::ostd::filesystemtream outfile(file_name + ".tmp");
+    std::ofstream outfile(file_name + ".tmp");
     if (!outfile) {
         std::cerr << "Couldn't create temp file." << std::endl;
         return;
     }
 
-    if (std::filesystem::file_size(file_name) <= MB10) {
+    if (fs::file_size(file_name) <= MB10) {
         std::string mem_text((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
         size_t pos = 0;
         while ((pos = mem_text.find(old_word, pos)) != std::string::npos) {
@@ -177,10 +178,10 @@ void pipe_for_directory_rec(const std::string& str_path,
                             const std::vector<std::string>& exceptions, 
                             bool verbosity)
 {
-    std::filesystem::path path = str_path;
-    std::vector<std::filesystem::path> files;
+    fs::path path = str_path;
+    std::vector<fs::path> files;
 
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(path)) {
+    for (const auto& entry : fs::recursive_directory_iterator(path)) {
         if (entry.is_regular_file())
             files.push_back(entry.path());
     }
@@ -202,10 +203,10 @@ void pipe_for_directory(const std::string& str_path,
                         const std::vector<std::string>& exceptions,
                         bool verbosity)
 {
-    std::filesystem::path path = str_path;
+    fs::path path = str_path;
     std::unordered_set<std::string> exc_set(exceptions.begin(), exceptions.end());
 
-    for (const auto& entry : std::filesystem::directory_iterator(path)) {
+    for (const auto& entry : fs::directory_iterator(path)) {
         if (entry.is_regular_file()) {
             if (verbosity)
                 std::cout << "replacing in: " << entry.path() << std::endl;
