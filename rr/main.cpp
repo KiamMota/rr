@@ -12,6 +12,7 @@
 
 #define NOFLAG "__noFLAG"
 #define MB10 10485760
+#define RR_VERSION "0.3"
 
 namespace fs = std::filesystem;
 
@@ -28,25 +29,40 @@ enum class file_type {
 
 void help()
 {
-  std::cout << "to use recursive replace: \n";
-  std::cout << "  <OLD_WORD> <NEW_WORLD> <CONTEXT> |flags|\n";
-  std::cout << "\r\n\r\n";
-  std::cout << "|flags|\r\n";
-  std::cout << "  no flags yet";
-  std::exit(0);
+    std::cout << "To use recursive replace:\n";
+    std::cout << "  <OLD_WORD> <NEW_WORD> <FILE/DIR/OTHER> |flags|\n\n";
+    std::cout << "Flags:\n";
+
+    std::cout << "  -v / --verbosity    : Show each replacement as it happens, with position info.\n";
+    std::cout << "                        Useful for debugging or verifying which occurrences are replaced.\n\n";
+
+    std::cout << "  -e / --exceptions   : Skip or handle specific lines or patterns that match user-defined rules.\n";
+    std::cout << "                        Can be used to avoid replacing words inside comments, quotes, or other contexts.\n\n";
+
+    std::cout << "  -r / --recursive    : Apply replacements recursively across multiple files or directories.\n";
+    std::cout << "                        Useful when you want to process all files in a folder structure automatically.\n\n";
+
+    std::cout << "  -t / --timestamp    : Apply a timestamp or backup to the file before performing replacements.\n";
+
 }
 
 void version()
 {
-  std::cout << "rr version 0.3\r\n";
+    std::cout << "  _ __ _ __ \n";
+    std::cout << " | '__| '__|\n";
+    std::cout << " | |  | |   \n";
+    std::cout << " |_|  |_|   \n\n";
+
+    std::cout << "recursive replace version " << RR_VERSION << "\r\n";
 }
+
 
 std::vector<std::string> find_excepction_flag(const int& argn, char**& argv)
 {
   std::vector<std::string> excepctions;
   for(int i = 0; i<argn; i++)
   {
-    if(std::strcmp(argv[i], "-e") == 0)
+    if(std::strcmp(argv[i], "-e") == 0 || std::strcmp(argv[i], "--exceptions"))
     {
       for(int j = i + 1; j<argn; j++)
       {
@@ -62,7 +78,7 @@ bool find_recursive_flag(const int& argn, char**& argv)
 {
   for(int i = 0; i<argn; i++)
   {
-    if(std::strcmp(argv[i], "-r") == 0)
+    if(std::strcmp(argv[i], "-r") == 0 || std::strcmp(argv[i], "--recursive") == 0)
       return true;
   }
   return false;
@@ -72,7 +88,7 @@ bool find_time_flag(const int& argn, char**& argv)
 {
   for(int i = 0; i<argn; i++)
   {
-    if(std::strcmp(argv[i], "-t") == 0)
+    if(std::strcmp(argv[i], "-t") == 0 || std::strcmp(argv[i], "--timestamp") == 0)
       return true;
   }
   return false;
@@ -209,9 +225,18 @@ int main(int argn, char** argv)
   /* to sync with the argv */
   argn--;
 
+  if(argn <= 2 && (std::strcmp(argv[0], "-v") == 0 || std::strcmp(argv[0], "--version") == 0))
+  {
+    version();
+    std::exit(0);
+  }
+
   if(argn <= 2)
+  {
     help();
-    /* execution stops */
+    std::exit(0);
+  }
+
 
   /* parsing arguments */
 
@@ -238,11 +263,11 @@ int main(int argn, char** argv)
   if(old_word == new_word)
   {
     std::cout << "the words are the same!" << std::endl;
-    std::exit(1);
-  }
+      std::exit(1);
+    }
 
   if(is_verbosity)
-  {
+    {
     if(!exception_flags.empty())
     {
       std::cout << "files to ignore in exception list: " << std::endl;
