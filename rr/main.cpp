@@ -12,31 +12,20 @@
 
 #include "messages.hpp"
 #include "arg_traits.hpp"
+#include "file.hpp"
 
 #define NOFLAG "__noFLAG"
 #define MB10 10485760
 #define RR_VERSION "0.3"
 
-namespace fs = std::filesystem;
-
-enum class file_type {
-    Regular,     // Arquivo normal
-    Directory,   // Pasta
-    Symlink,     // Link simbÃ³lico
-    Character,   // Arquivo de dispositivo de caractere
-    Block,       // Arquivo de dispositivo em bloco
-    FIFO,        // Named pipe
-    Socket,      // Socket
-    Unknown      // Tipo desconhecido / nÃ£o suportado
-};
 
 file_type get_file_type(const std::string& file) {
     std::error_code ec;
-    fs::file_status status = fs::symlink_status(file, ec);
+    std::filesystem::file_status status = std::filesystem::symlink_status(file, ec);
     if (ec) return file_type::Unknown;
-    if (fs::is_regular_file(status)) return file_type::Regular;
-    if (fs::is_directory(status)) return file_type::Directory;
-    if (fs::is_symlink(status)) return file_type::Symlink;
+    if (std::filesystem::is_regular_file(status)) return file_type::Regular;
+    if (std::filesystem::is_directory(status)) return file_type::Directory;
+    if (std::filesystem::is_symlink(status)) return file_type::Symlink;
     return file_type::Unknown;
 }
 
@@ -57,7 +46,7 @@ void pipe_for_file(const std::string& file_name,
         return;
     }
 
-    if (fs::file_size(file_name) <= MB10) {
+    if (std::filesystem::file_size(file_name) <= MB10) {
         size_t pos = 0;
         std::string mem_text((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
         while ((pos = mem_text.find(old_word, pos)) != std::string::npos) 
@@ -108,15 +97,13 @@ void pipe_for_directory_rec(const std::string& str_path,
                             const std::vector<std::string>& exceptions,
                             bool verbosity)
 {
-    fs::path path = str_path;
-    std::vector<fs::path> files;
+    std::filesystem::path path = str_path;
+    std::vector<std::filesystem::path> files;
 
-    for (const auto& entry : fs::recursive_directory_iterator(path)) {
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(path)) {
         if (entry.is_regular_file())
             files.push_back(entry.path());
     }
-
-    std::sort(files.begin(), files.end()); // ordenaÃ§Ã£o lexicogrÃ¡fica
 
     for (const auto& file : files) {
         if (verbosity)
@@ -133,10 +120,10 @@ void pipe_for_directory(const std::string& str_path,
                         const std::vector<std::string>& exceptions,
                         bool verbosity)
 {
-    fs::path path = str_path;
+    std::filesystem::path path = str_path;
     std::unordered_set<std::string> exc_set(exceptions.begin(), exceptions.end());
 
-    for (const auto& entry : fs::directory_iterator(path)) {
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
         if (entry.is_regular_file()) {
             if (verbosity)
                 std::cout << "replacing in: " << entry.path() << std::endl;
