@@ -101,12 +101,8 @@ void file::dir_pipeline(const std::string &old_word, const std::string &new_word
 
       if (exc_set.find(entry.path().string()) == exc_set.end())
       {
-        if(entry.file_size() <= MB10)
-        {
-          ligth_pipeline(old_word, new_word, entry.path().filename().string(), verbosity);
-        }else{ 
-          heavy_pipeline(old_word, new_word, entry.path().filename().string(), verbosity);
-        }   
+        if(entry.file_size() <= MB10) ligth_pipeline(old_word, new_word, entry.path().filename().string(), verbosity);
+        else heavy_pipeline(old_word, new_word, entry.path().filename().string(), verbosity);
       }
     }
   }
@@ -129,14 +125,8 @@ void file::dir_recusive_pipeline(const std::string &old_word, const std::string 
 
     if (std::find(exceptions.begin(), exceptions.end(), file.string()) == exceptions.end())
     {
-      if(std::filesystem::file_size(file) <= MB10)
-      {
-        ligth_pipeline(old_word, new_word, file.string(), verbosity);
-      }
-      else
-      {
-        heavy_pipeline(old_word, new_word, file.string(), verbosity);
-      }
+      if(std::filesystem::file_size(file) <= MB10)ligth_pipeline(old_word, new_word, file.string(), verbosity);
+      else heavy_pipeline(old_word, new_word, file.string(), verbosity);
     }
   }
 }

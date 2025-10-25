@@ -1,3 +1,4 @@
 build/*
 .cache/*
+test/movies1gb.json
 
