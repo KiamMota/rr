@@ -60,24 +60,31 @@ void pipe_for_file(const std::string& file_name,
     if (fs::file_size(file_name) <= MB10) {
         size_t pos = 0;
         std::string mem_text((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
-        while ((pos = mem_text.find(old_word, pos)) != std::string::npos) {
-            mem_text.replace(pos, old_word.size(), new_word);
-            if (verbosity)
-                std::cout << "Replacing '" << old_word << "' with '" << new_word << "' at position " << pos << std::endl;
-            pos += new_word.size();
+        while ((pos = mem_text.find(old_word, pos)) != std::string::npos) 
+        {
+          mem_text.replace(pos, old_word.size(), new_word);
+          if (verbosity)
+          {
+            std::cout << "Replacing '" << old_word << "' with '" << new_word << "' at " << pos << std::endl;
+          }
+          pos += new_word.size();
         }
         outfile << mem_text;
     } else {
-        std::string line;
-        while (std::getline(infile, line)) {
-            size_t pos = 0;
-            while ((pos = line.find(old_word, pos)) != std::string::npos) {
-                line.replace(pos, old_word.size(), new_word);
-                if (verbosity)
-                    std::cout << "Replacing '" << old_word << "' with '" << new_word << "' at position " << pos << std::endl;
-                pos += new_word.size();
+        std::string column;
+        while (std::getline(infile, column)) 
+        {
+          size_t pos = 0;
+          while ((pos = column.find(old_word, pos)) != std::string::npos) 
+          {
+            column.replace(pos, old_word.size(), new_word);
+            if (verbosity)
+            {
+              std::cout << "Replacing '" << old_word << "' with '" << new_word << "' at " << pos << std::endl;
             }
-            outfile << line << '\n';
+            pos += new_word.size();
+          }
+            outfile << column << '\n';
             outfile.flush();
         }
     }
@@ -92,6 +99,7 @@ void pipe_for_file(const std::string& file_name,
     if (std::rename((file_name + ".tmp").c_str(), file_name.c_str()) != 0) {
         std::cerr << "Error renaming temp file." << std::endl;
     }
+    if(verbosity) std::cout << "done!" << std::endl;
 }
 
 void pipe_for_directory_rec(const std::string& str_path, 
@@ -196,15 +204,13 @@ int main(int argn, char** argv)
   if(context_type == file_type::Regular) 
   {
     if(is_recursive && is_verbosity)
-    {
+      {
       std::cout << "starting recursive replace in " << context << " file" << std::endl;
       std::cout << "ignoring the '-r' flag." << std::endl;
     }
 
     pipe_for_file(context, old_word, new_word, is_verbosity);
-    if(is_verbosity)
-      std::cout << "done." << std::endl;
-    std::exit(1);
+    std::exit(0);
   }
   /* pipe to Directory */
   if(context_type == file_type::Directory)
