@@ -21,7 +21,7 @@ std::vector<std::string> arg_traits::find_exception_contents(int &argn, char **&
   return excepctions;
 }
 
-bool arg_traits::find_recursive_flag(int &argn, char **&argv)
+bool arg_traits::find_recursive_flag(const int &argn, char **&argv)
 {
 
   for(int i = 0; i<argn; i++)
@@ -32,7 +32,7 @@ bool arg_traits::find_recursive_flag(int &argn, char **&argv)
   return false;
 }
 
-bool arg_traits::find_timestamp_flag(int &argn, char **&argv)
+bool arg_traits::find_timestamp_flag(const int &argn, char **&argv)
 {
 
   for(int i = 0; i<argn; i++)
@@ -43,7 +43,7 @@ bool arg_traits::find_timestamp_flag(int &argn, char **&argv)
   return false;
 }
 
-bool arg_traits::find_verbosity_flag(int &argn, char **&argv)
+bool arg_traits::find_verbosity_flag(const int &argn, char **&argv)
 {
 
   for(int i = 0; i<argn; i++)

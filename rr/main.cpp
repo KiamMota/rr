@@ -1,138 +1,14 @@
-#include <algorithm>
-#include <cstddef>
-#include <cstdlib>
 #include <cstring>
-#include <fstream>
 #include <iostream>
 #include <filesystem>
-#include <ostream>
 #include <string>
-#include <vector>
-#include <unordered_set>
 
 #include "messages.hpp"
 #include "arg_traits.hpp"
 #include "file.hpp"
 
 #define NOFLAG "__noFLAG"
-#define MB10 10485760
 #define RR_VERSION "0.3"
-
-
-file_type get_file_type(const std::string& file) {
-    std::error_code ec;
-    std::filesystem::file_status status = std::filesystem::symlink_status(file, ec);
-    if (ec) return file_type::Unknown;
-    if (std::filesystem::is_regular_file(status)) return file_type::Regular;
-    if (std::filesystem::is_directory(status)) return file_type::Directory;
-    if (std::filesystem::is_symlink(status)) return file_type::Symlink;
-    return file_type::Unknown;
-}
-
-void pipe_for_file(const std::string& file_name,
-                   const std::string& old_word,
-                   const std::string& new_word,
-                   bool verbosity)
-{
-    std::ifstream infile(file_name);
-    if (!infile) {
-        std::cerr << "Couldn't open file '" << file_name << "'." << std::endl;
-        return;
-    }
-
-    std::ofstream outfile(file_name + ".tmp");
-    if (!outfile) {
-        std::cerr << "Couldn't create temp file." << std::endl;
-        return;
-    }
-
-    if (std::filesystem::file_size(file_name) <= MB10) {
-        size_t pos = 0;
-        std::string mem_text((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
-        while ((pos = mem_text.find(old_word, pos)) != std::string::npos) 
-        {
-          mem_text.replace(pos, old_word.size(), new_word);
-          if (verbosity)
-          {
-            std::cout << "Replacing '" << old_word << "' with '" << new_word << "' at " << pos << std::endl;
-          }
-          pos += new_word.size();
-        }
-        outfile << mem_text;
-    } else {
-        std::string line;
-        while (std::getline(infile, line)) 
-        {
-          size_t pos = 0;
-          while ((pos = line.find(old_word, pos)) != std::string::npos) 
-          {
-            line.replace(pos, old_word.size(), new_word);
-            if (verbosity)
-            {
-              std::cout << "Replacing '" << old_word << "' with '" << new_word << "' at " << pos << std::endl;
-            }
-            pos += new_word.size();
-          }
-            outfile << line << '\n';
-            outfile.flush();
-        }
-    }
-
-    infile.close();
-    outfile.close();
-
-    if (std::remove(file_name.c_str()) != 0) {
-        std::cerr << "Error deleting original file." << std::endl;
-        return;
-    }
-    if (std::rename((file_name + ".tmp").c_str(), file_name.c_str()) != 0) {
-        std::cerr << "Error renaming temp file." << std::endl;
-    }
-    if(verbosity) std::cout << "done!" << std::endl;
-}
-
-void pipe_for_directory_rec(const std::string& str_path, 
-                            const std::string& old_word,
-                            const std::string& new_word,
-                            const std::vector<std::string>& exceptions,
-                            bool verbosity)
-{
-    std::filesystem::path path = str_path;
-    std::vector<std::filesystem::path> files;
-
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(path)) {
-        if (entry.is_regular_file())
-            files.push_back(entry.path());
-    }
-
-    for (const auto& file : files) {
-        if (verbosity)
-            std::cout << "replacing in: " << file << '\n';
-
-        if (std::find(exceptions.begin(), exceptions.end(), file.string()) == exceptions.end())
-            pipe_for_file(file.string(), old_word, new_word, verbosity);
-    }
-}
-
-void pipe_for_directory(const std::string& str_path,
-                        const std::string& old_word,
-                        const std::string& new_word,
-                        const std::vector<std::string>& exceptions,
-                        bool verbosity)
-{
-    std::filesystem::path path = str_path;
-    std::unordered_set<std::string> exc_set(exceptions.begin(), exceptions.end());
-
-    for (const auto& entry : std::filesystem::directory_iterator(path)) {
-        if (entry.is_regular_file()) {
-            if (verbosity)
-                std::cout << "replacing in: " << entry.path() << std::endl;
-
-            if (exc_set.find(entry.path().string()) == exc_set.end())
-                pipe_for_file(entry.path().string(), old_word, new_word, verbosity);
-        }
-    }
-}
 
 
 int main(int argn, char** argv)
@@ -158,22 +34,18 @@ int main(int argn, char** argv)
     std::exit(0);
   }
 
-
   /* parsing arguments */
 
+  std::string old_word = argv[0];
+  std::string new_word = argv[1];
+  std::string context = argv[2];
+  
   bool is_with_timestamp = arg_traits::find_timestamp_flag(argn, argv);
   bool is_recursive = arg_traits::find_recursive_flag(argn, argv);
   bool is_verbosity = arg_traits::find_verbosity_flag(argn, argv);
   std::vector<std::string> exception_flags = arg_traits::find_exception_contents(argn, argv);
 
-  /* gets the old world */
-  std::string old_word = argv[0];
-  /* gets the new world */
-  std::string new_word = argv[1];
-  /* gets the context */
-  std::string context = argv[2];
-
-  file_type context_type  = get_file_type(context);
+  file::file_type context_type  = file::get_file_type(context);
 
   if(old_word == new_word)
   {
@@ -181,39 +53,37 @@ int main(int argn, char** argv)
       std::exit(1);
   }
 
-  if(context_type == file_type::Unknown)
+  if(context_type == file::file_type::Unknown)
   {
     std::cout << "error: context file '" << context << "' " << "is unknown or not exists." << std::endl;
     std::exit(1);
   }
 
   /* pipe to files */
-  if(context_type == file_type::Regular) 
+  if(context_type == file::file_type::Regular) 
   {
     if(is_recursive && is_verbosity)
-      {
-      std::cout << "starting recursive replace in " << context << " file" << std::endl;
+    {
       std::cout << "ignoring the '-r' flag." << std::endl;
     }
-
-    pipe_for_file(context, old_word, new_word, is_verbosity);
+    if(std::filesystem::file_size(context) <= MB10) file::ligth_pipeline(old_word, new_word, context, is_verbosity);
+    else file::heavy_pipeline(old_word, new_word, context, is_verbosity); 
     std::exit(0);
   }
-  /* pipe to Directory */
-  if(context_type == file_type::Directory)
+  if(context_type == file::file_type::Directory)
   {
     if(is_recursive)
     {
       if(is_verbosity)
       {
-        std::cout << "starting recursive..." << std::endl;
+        std::cout << "starting recursive in directory: " << std::filesystem::absolute(context) << std::endl;
       }
-      pipe_for_directory_rec(context, old_word, new_word, exception_flags, is_verbosity);
+      file::dir_recusive_pipeline(context, old_word, new_word, exception_flags, is_verbosity);
       if(is_verbosity)
         std::cout << "done." << std::endl;
       std::exit(0);
     }
-      pipe_for_directory(context, old_word, new_word, exception_flags, is_verbosity);
+      file::dir_pipeline(context, old_word, new_word, exception_flags, is_verbosity);
   }
 
 }
