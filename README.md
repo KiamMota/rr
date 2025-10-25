@@ -1,20 +1,29 @@
 # rr - Recursive Replace
 
-`rr` is a lightweight and efficient command-line utility for performing **massive text replacements** across files and directories. It is designed to handle large file structures with speed and precision.
+`rr` is a high-performance command-line utility for **large-scale, recursive text replacements** in files and directories. It is designed to handle **multi-gigabyte files** efficiently, using memory-optimized pipelines and minimal I/O overhead.  
 
-## Features
+## Key Functionality
 
-- Replace words or patterns recursively in files and directories.
-- Intelligent pipeline selection optimized based on file size for maximum performance.
-- Verbose mode to track replacements with position info.
-- Exception handling to skip specific lines or patterns (e.g., comments or strings).
-- Optional backup/timestamp before performing replacements.
+- **Recursive Replacement:** Traverse directories and perform replacements in multiple files simultaneously.
+- **Pattern Matching:** Supports literal strings and regex patterns for flexible search-and-replace operations.
+- **Dynamic Pipeline Selection:** Chooses the optimal replacement strategy based on file size and type, balancing memory usage and speed.
+- **Verbose Mode:** Reports each replacement with file path, position, and context for debugging or logging.
+- **Selective Skipping:** Can ignore lines, comments, or string literals based on rules to avoid unintended replacements.
+- **Safe Operations:** Optional creation of temporary files or backups before overwriting originals.
 
-## Installation
+# JSON Replacement System Refactoring (1 GB File)
 
-Compile from source (Linux x86-64):
+## Background
+
+We performed performance tests on a **1 GB JSON file** to replace all double quotes `"` with single quotes `'`.  
+
+- **v0.3:** Original implementation, line-by-line processing with per-line flushes.
+- **pre-v0.4:** Refactored version, optimized for large-file processing with block buffering.
+
+### Terminal Output
+
+**Original v0.3 script:**
 
 ```bash
-git clone <repo_url>
-cd rr/build
-make
+replacing " por ' in movies1gb.json
+time: real	0m10,775s
