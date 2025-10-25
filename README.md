@@ -25,5 +25,13 @@ We performed performance tests on a **1 GB JSON file** to replace all double q
 **Original v0.3 script:**
 
 ```bash
-replacing " por ' in movies1gb.json
+replacing " to ' in movies1gb.json
 time: real	0m10,775s
+```
+
+**refactored pre v0.4 script:**
+```bash
+replacing " to ' in movies1gb.json
+time: real	0m7,766s
+``
+
