@@ -71,20 +71,20 @@ void pipe_for_file(const std::string& file_name,
         }
         outfile << mem_text;
     } else {
-        std::string column;
-        while (std::getline(infile, column)) 
+        std::string line;
+        while (std::getline(infile, line)) 
         {
           size_t pos = 0;
-          while ((pos = column.find(old_word, pos)) != std::string::npos) 
+          while ((pos = line.find(old_word, pos)) != std::string::npos) 
           {
-            column.replace(pos, old_word.size(), new_word);
+            line.replace(pos, old_word.size(), new_word);
             if (verbosity)
             {
               std::cout << "Replacing '" << old_word << "' with '" << new_word << "' at " << pos << std::endl;
             }
             pos += new_word.size();
           }
-            outfile << column << '\n';
+            outfile << line << '\n';
             outfile.flush();
         }
     }
