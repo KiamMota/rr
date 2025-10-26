@@ -41,10 +41,11 @@ int main(int argn, char** argv)
   std::string context = argv[2];
   
   bool is_with_timestamp = arg_traits::find_timestamp_flag(argn, argv);
-  bool is_recursive = arg_traits::find_recursive_flag(argn, argv);
   bool is_verbosity = arg_traits::find_verbosity_flag(argn, argv);
-  std::vector<std::string> exception_flags = arg_traits::find_exception_contents(argn, argv);
+  bool is_recursive = arg_traits::find_recursive_flag(argn, argv);
 
+  std::vector<std::string> exception_flags = arg_traits::find_exception_contents(argn, argv);
+   
   file::file_type context_type  = file::get_file_type(context);
 
   if(old_word == new_word)
@@ -59,7 +60,7 @@ int main(int argn, char** argv)
     std::exit(1);
   }
 
-  /* pipe to files */
+  /* pipeline to files */
   if(context_type == file::file_type::Regular) 
   {
     if(is_recursive && is_verbosity)
@@ -70,6 +71,9 @@ int main(int argn, char** argv)
     else file::heavy_pipeline(old_word, new_word, context, is_verbosity); 
     std::exit(0);
   }
+  
+  /* --- */
+  /* pipieline for directories */
   if(context_type == file::file_type::Directory)
   {
     if(is_recursive)
@@ -84,6 +88,6 @@ int main(int argn, char** argv)
       std::exit(0);
     }
       file::dir_pipeline(context, old_word, new_word, exception_flags, is_verbosity);
+      std::exit(0);
   }
-
 }
