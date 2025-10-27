@@ -49,17 +49,4 @@ replacing " to ' in movies1gb.json
 time: real	0m7,766s
 ```
 
-**Impact:** Refactoring to block-based reading reduces I/O operations and memory churn, yielding a ~28% speed improvement without changing the replacement output.
-
----
-
-## Internal Workflow
-
-1. **Target Identification:** Determines whether the input is a single file or a directory; applies recursion if specified.  
-2. **Optimized Reading:** Processes files in memory-optimized blocks rather than line-by-line.  
-3. **Pattern Replacement:** Applies literal or regex-based replacements, respecting exception rules.  
-4. **Logging:** Outputs detailed replacement info when verbosity is enabled.  
-5. **Safety Operations:** Creates backups or timestamps prior to overwriting files if the timestamp flag is active.  
-
 `rr` is therefore ideal for **high-volume, automated, and safe text replacement tasks**, providing control and performance unmatched by traditional tools like `sed` or `perl` in massive file scenarios.
-```
