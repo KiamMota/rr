@@ -1,6 +1,6 @@
-# rr - Recursive Replace
+# `rr` - `recursive` `replace` 
 
-`rr` is a **high-performance command-line utility** designed for **large-scale, recursive text replacement** across files and directories. It is optimized to handle **multi-gigabyte files** efficiently, using memory-conscious pipelines and minimal I/O overhead while preserving safety and flexibility.
+`rr` is a high-performance cross-platform command-line utility designed for **large-scale, recursive text replacement** across files and directories. Written in C++, it is optimized to handle multi-gigabyte files efficiently, using memory-conscious pipelines and minimal I/O overhead while preserving safety and flexibility.
 
 ---
 
