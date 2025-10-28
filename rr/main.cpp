@@ -7,10 +7,6 @@
 #include "arg_traits.hpp"
 #include "file.hpp"
 
-#define NOFLAG "__noFLAG"
-#define RR_VERSION "0.3"
-
-
 int main(int argn, char** argv)
 {
   /* to skip the command name*/

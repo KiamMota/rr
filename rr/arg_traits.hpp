@@ -9,7 +9,6 @@ namespace arg_traits
   bool find_verbosity_flag(const int& argn, char**& argv);
   bool find_timestamp_flag(const int& argn, char**&argv);
   bool find_recursive_flag(const int& argn, char**& argv);
-
 }
 
 #endif
